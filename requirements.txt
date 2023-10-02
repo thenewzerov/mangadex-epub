@@ -1,0 +1,2 @@
+mangadex===2.5.2
+EbookLib===0.18
