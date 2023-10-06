@@ -1,3 +1,4 @@
+import numbers
 import os
 
 from ebooklib import epub
@@ -52,9 +53,22 @@ class MangaEpubCreator:
         chapter_count = 0
         chapters = []
 
-        # For every chapter in the volume directory, add it to the epub
-        for chapter_dir in os.listdir(volume_directory):
+        # Chapters are stored in directories named Chapter_1, Chapter_2, etc.
+        # Because of this, we need to sort the directories by their number before we add them.
+        # Otherwise, they'll be added out of order.
+        volume_directory_contents = os.listdir(volume_directory)
+        chapters_to_sort = []
+        for chapter_dir in volume_directory_contents:
             chapter_directory = os.path.join(volume_directory, chapter_dir)
+            if os.path.isdir(chapter_directory):
+                chapter_number = chapter_dir.replace('Chapter_', '')
+                chapters_to_sort.append((chapter_number, chapter_dir))
+
+        chapters_to_sort.sort(key=lambda x: float(x[0]))
+
+        # For every chapter in the volume directory, add it to the epub
+        for chapter_dir in chapters_to_sort:
+            chapter_directory = os.path.join(volume_directory, chapter_dir[1])
             if os.path.isdir(chapter_directory):
                 chapter, chapter_name, pages_added = self.add_chapter(book, chapter_directory, chapter_count, page_count)
                 chapters.append(chapter)

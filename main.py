@@ -61,5 +61,5 @@ if __name__ == '__main__':
         volume_directory = os.path.join(manga_directory, 'Volume_' + volume_number)
 
         # Create epub
-        epub_generator.create_volume(volume_dict['volume'], volume_directory, manga_directory, args.skip_download)
+        epub_generator.create_volume(volume_dict['volume'], volume_directory, manga_directory, args.skip)
 
