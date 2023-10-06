@@ -44,6 +44,21 @@ def get_args():
     # Read directory to store files
     parser.add_argument('-d', '--directory', type=str, help='Directory to store files')
 
+    # Skip Download
+    parser.add_argument('-s', '--skip', action='store_true', help='Skip downloading the manga, only create the epub')
+
+    # Ignore Limits
+    parser.add_argument('-i', '--ignore-limits', action='store_true', help='Ignore the rate limits')
+
+    # Volumes
+    parser.add_argument('-v', '--volumes', type=str, help='Comma separated list of volumes to download')
+
+    # Chapters
+    parser.add_argument('-c', '--chapters', type=str, help='Comma separated list of chapters to download')
+
+    # Languages
+    parser.add_argument('-l', '--language', type=str, help='Language to download', default='en')
+
     # Parse arguments
     args = parser.parse_args()
 

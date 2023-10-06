@@ -14,12 +14,8 @@ class MangaEpubCreator:
 
         create_directory(self.output_path)
 
-    def create_volume(self, volume_name, volume_directory):
+    def create_volume(self, volume_name, volume_directory, manga_directory, skip_download=False):
         print('Creating epub for volume: ' + volume_name)
-        book = epub.EpubBook()
-
-        # set metadata
-        book.set_identifier(self.manga.manga_id + '_' + volume_name)
 
         # Get the Title
         title = self.manga.title['en']
@@ -28,13 +24,29 @@ class MangaEpubCreator:
             if 'en' in alt_title_dict:
                 title = alt_title_dict['en']
 
-        book.set_title(title + ' Vol ' + volume_name)
-        book.set_language("en")
+        book_path = os.path.join(self.output_path, title + ' Vol ' + volume_name + '.epub')
+
+        # If the epub already exists, skip it
+        if os.path.isfile(book_path):
+            print('Epub already exists, skipping...')
+            return
+
+        book = epub.EpubBook()
+
+        # set metadata
+        book.set_identifier(self.manga.manga_id + '_' + volume_name)
 
         book.add_author(self.manga.authorId[0])
 
-        # Add the cover
-        book.set_cover("cover.jpg", open(os.path.join(volume_directory, 'cover.jpg'), "rb").read())
+        # Set the title
+        book.set_title(title + ' Vol ' + volume_name)
+        book.set_language("en")
+
+        # Add the cover.  If it doesn't exist, use the manga cover
+        if os.path.isfile(os.path.join(volume_directory, 'cover.jpg')):
+            book.set_cover("cover.jpg", open(os.path.join(volume_directory, 'cover.jpg'), "rb").read())
+        else:
+            book.set_cover("cover.jpg", open(os.path.join(manga_directory, 'cover.jpg'), "rb").read())
 
         page_count = 0
         chapter_count = 0
@@ -49,7 +61,13 @@ class MangaEpubCreator:
                 page_count += pages_added
                 chapter_count += 1
 
-                book.toc.append(chapter)
+                # If the page count is 0, skip the chapter
+                # Otherwise, you'll have errors writing the file out.
+                if pages_added == 0:
+                    print('Skipping chapter ' + chapter_name + ' because it has no pages')
+                    continue
+                else:
+                    book.toc.append(chapter)
 
         # add default NCX and Nav file
         book.add_item(epub.EpubNcx())
@@ -70,9 +88,6 @@ class MangaEpubCreator:
         # create spine
         spine = ['cover', 'nav'] + chapters
         book.spine = spine
-
-        # create book path
-        book_path = os.path.join(self.output_path, title + ' Vol ' + volume_name + '.epub')
 
         # write to the file
         epub.write_epub(book_path + '', book, {})

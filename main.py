@@ -15,8 +15,22 @@ if __name__ == '__main__':
 
     manga_id = args.manga
 
+    # If volumes is specified, split into list and pass to downloader
+    volumes_list = None
+    if args.volumes:
+        volumes_list = args.volumes.split(',')
+
+    # If chapters is specified, split into list and pass to downloader
+    chapters_list = None
+    if args.chapters:
+        chapters_list = args.chapters.split(',')
+
+    la = args.language
+
     # Get the pages
-    details, errors = downloader.fetch_manga(manga_id, args.directory, ignore_limits=False, skip_download=False)
+    details, errors = downloader.fetch_manga(manga_id, args.directory, ignore_limits=args.ignore_limits,
+                                             skip_download=args.skip, volumes_list=volumes_list,
+                                             chapters_list=chapters_list, language=la)
 
     # Print errors
     if len(errors) > 0:
@@ -47,5 +61,5 @@ if __name__ == '__main__':
         volume_directory = os.path.join(manga_directory, 'Volume_' + volume_number)
 
         # Create epub
-        epub_generator.create_volume(volume_dict['volume'], volume_directory)
+        epub_generator.create_volume(volume_dict['volume'], volume_directory, manga_directory, args.skip_download)
 

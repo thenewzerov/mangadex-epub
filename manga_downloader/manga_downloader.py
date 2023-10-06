@@ -11,7 +11,8 @@ class MangaDownloader:
     def __init__(self):
         self.api = mangadex.Api()
 
-    def fetch_manga(self, manga_id: str, directory: str, ignore_limits=False, skip_download=False):
+    def fetch_manga(self, manga_id: str, directory: str, ignore_limits=False, skip_download=False,
+                    volumes_list=None, chapters_list=None, language='en'):
         errors = []
 
         # Get manga
@@ -24,8 +25,8 @@ class MangaDownloader:
         title = manga.title['en']
 
         for alt_title_dict in manga.altTitles:
-            if 'en' in alt_title_dict:
-                title = alt_title_dict['en']
+            if language in alt_title_dict:
+                title = alt_title_dict[language]
         safe_title = ''.join(letter for letter in title if letter.isalnum())
         manga_directory = os.path.join(directory, safe_title)
 
@@ -54,6 +55,9 @@ class MangaDownloader:
             return {'manga': manga, 'volumes': volumes, 'directory': manga_directory}, errors
 
         for key, volume_dict in volumes.items():
+            if volumes_list is not None and volume_dict['volume'] not in volumes_list:
+                continue
+
             print('  Volume: ' + volume_dict['volume'])
 
             # Create directory for volume
@@ -74,6 +78,10 @@ class MangaDownloader:
                         errors.append(cover_path)
 
             for key, chapter_dict in volume_dict['chapters'].items():
+
+                if chapters_list is not None and chapter_dict['chapter'] not in chapters_list:
+                    continue
+
                 print('    Chapter: ' + chapter_dict['chapter'])
                 # Create directory for chapter
                 chapter_number = chapter_dict['chapter']
@@ -83,14 +91,17 @@ class MangaDownloader:
 
                 # Get pages
                 chapter = self.api.get_chapter(chapter_id=chapter_dict['id'])
-
-                if chapter.translatedLanguage != 'en':
-                    for chapter_id in chapter_dict['others']:
-                        chapter = self.api.get_chapter(chapter_id=chapter_id)
-                        if chapter.translatedLanguage == 'en':
-                            break
+                time.sleep(1)
 
                 pages = chapter.fetch_chapter_images()
+
+                if chapter.translatedLanguage != language or len(pages) == 0:
+                    for chapter_id in chapter_dict['others']:
+                        chapter = self.api.get_chapter(chapter_id=chapter_id)
+                        pages = chapter.fetch_chapter_images()
+                        time.sleep(1)
+                        if chapter.translatedLanguage == language and len(pages) > 0:
+                            break
 
                 download_needed = False
                 for index, page in enumerate(pages):

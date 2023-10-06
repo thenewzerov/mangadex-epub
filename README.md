@@ -35,19 +35,39 @@ Sorry mangadex.org.
 This also assumes you're downloading English. If you want a different language, for now just change the code.
 Look for anywhere I have the string `en`
 
-
 The downloader WILL check for already downloaded files.  So if you have to stop mid-download and re-run it later,
 at least there's that.
 
 ## Options for Downloading
 
-lol, no.
+You're lucky.  I very quickly ran into a problem and needed to implement these.
+
+If you want to specify which volumes to download, use the `-v` option.
+
+If you want to specify which chapters to download, use the `-c` option.
+
+For example, if I only wanted to download Volume 1, chapter 3, I would run:
+
+```
+python main.py --manga a1c7c817-4e59-43b7-9365-09675a149a6f --directory ./manga -v 1 -c 3
+```
+
+If I only wanted to download Volumes 1 and 2, chapters 3, 4, 25, 30 I would run:
+
+```
+python main.py --manga a1c7c817-4e59-43b7-9365-09675a149a6f --directory ./manga -v 1,2 -c 3,4,25,30
+```
+
+If you already have the images downloaded, and just want to create the epub file, use the `-s` option.
 
 
-But seriously, there's nothing.  No selecting specific chapters or volumes.
-It's going to download everything.  Make sure you have space.  
-Don't try on something like One Piece.
+If you want to change which language you use, use the `-l` option.
 
+
+## Warning
+
+This is a very quick and dirty script.  I'm not responsible for anything that happens to your computer.
+The rate limiting is very crude.
 I'm not responsible for you getting banned from mangadex.org for abusing their servers.
 
 I'm not responsible for you running out of space on your computer.
@@ -102,3 +122,5 @@ https://kdp.amazon.com/en_US/help/topic/G202131170
 Drag and drop the `.epub` file into it, then export it.
 
 I've tried this with Calibre, and the images didn't transfer correctly.
+
+Best luck I've had is converting it to a .mobi file.
