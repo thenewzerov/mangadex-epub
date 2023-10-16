@@ -12,7 +12,7 @@ class MangaDownloader:
         self.api = mangadex.Api()
 
     def fetch_manga(self, manga_id: str, directory: str, ignore_limits=False, skip_download=False,
-                    volumes_list=None, chapters_list=None, language='en'):
+                    volumes_list=None, chapters_list=None, language='en', skip_halfs=False):
         errors = []
 
         # Get manga
@@ -79,7 +79,12 @@ class MangaDownloader:
 
             for key, chapter_dict in volume_dict['chapters'].items():
 
+                # If a chapter list was sent it, go through those only
                 if chapters_list is not None and chapter_dict['chapter'] not in chapters_list:
+                    continue
+
+                # Skip .5 chapters
+                if skip_halfs and chapter_dict['chapter'].contains('.'):
                     continue
 
                 print('    Chapter: ' + chapter_dict['chapter'])
@@ -103,28 +108,35 @@ class MangaDownloader:
                         if chapter.translatedLanguage == language and len(pages) > 0:
                             break
 
-                download_needed = False
-                for index, page in enumerate(pages):
-                    # Print progress
-                    print_progress_bar(index + 1, len(pages), prefix='      Progress:', suffix='Complete', length=50)
+                if chapter.translatedLanguage != language:
+                    errors.append('  Chapter: ' + chapter_number + ' - Not available in ' + language)
+                    continue
+                elif len(pages) == 0:
+                    errors.append('  Chapter: ' + chapter_number + ' - No pages found')
+                    continue
+                else:
+                    download_needed = False
+                    for index, page in enumerate(pages):
+                        # Print progress
+                        print_progress_bar(index + 1, len(pages), prefix='      Progress:', suffix='Complete', length=50)
 
-                    # Download page if it doesn't exist
-                    page_filename = os.path.join(chapter_directory, f'{index:03d}.jpg')
+                        # Download page if it doesn't exist
+                        page_filename = os.path.join(chapter_directory, f'{index:03d}.jpg')
 
-                    if not os.path.exists(page_filename):
-                        # Be nice to the MangaDex servers.  But only sleep if we don't already have the page.
+                        if not os.path.exists(page_filename):
+                            # Be nice to the MangaDex servers.  But only sleep if we don't already have the page.
+                            if not ignore_limits:
+                                time.sleep(1)
+                            download_needed = True
+
+                            success = download_file(page_filename, page)
+                            if not success:
+                                print('Volume: ' + volume_number + ' Chapter: ' + chapter_number + ' Page: ' + str(index))
+                                errors.append('Page ' + str(page))
+
+                    if download_needed:
+                        # Sleep for 10 seconds because I want to be nice to the MangaDex servers
                         if not ignore_limits:
-                            time.sleep(1)
-                        download_needed = True
-
-                        success = download_file(page_filename, page)
-                        if not success:
-                            print('Volume: ' + volume_number + ' Chapter: ' + chapter_number + ' Page: ' + str(index))
-                            errors.append(page)
-
-                if download_needed:
-                    # Sleep for 10 seconds because I want to be nice to the MangaDex servers
-                    if not ignore_limits:
-                        time.sleep(10)
+                            time.sleep(10)
 
         return {'manga': manga, 'volumes': volumes, 'directory': manga_directory}, errors

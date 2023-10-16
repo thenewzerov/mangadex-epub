@@ -1,5 +1,6 @@
 # Mangadex to Epub
 
+
 ## Description
 This project is written to allow you to download manga from mangadex.org and convert it to an epub file.
 
@@ -14,7 +15,10 @@ Install the required packages with `pip install -r requirements.txt`
 
 ## Usage
 
-Run the script with `python main.py --manga <manga_id> --directory <directory>`
+Basic usage is this: 
+```
+python main.py --manga <manga_id> --directory <directory>
+```
 
 `manga_id` is the id of the manga you want to download. 
 You can find this in the url of the manga. 
@@ -38,7 +42,7 @@ Look for anywhere I have the string `en`
 The downloader WILL check for already downloaded files.  So if you have to stop mid-download and re-run it later,
 at least there's that.
 
-## Options for Downloading
+## Options
 
 You're lucky.  I very quickly ran into a problem and needed to implement these.
 
@@ -62,6 +66,27 @@ If you already have the images downloaded, and just want to create the epub file
 
 
 If you want to change which language you use, use the `-l` option.
+
+A complete list of options is available with `python main.py --help`
+
+```commandline
+usage: main.py [-h] [-m MANGA] [-d DIRECTORY] [-s] [-i] [-v VOLUMES]
+               [-c CHAPTERS] [-l LANGUAGE] [-r] [-p]
+
+MangaDexPy
+
+options:
+  -h, --help                            show this help message and exit
+  -m MANGA, --manga MANGA               Manga ID
+  -d DIRECTORY, --directory DIRECTORY   Directory to store files
+  -s, --skip                            Skip downloading the manga, only create the epub
+  -i, --ignore                          Ignore the rate limits
+  -v VOLUMES, --volumes VOLUMES         Comma separated list of volumes to download
+  -c CHAPTERS, --chapters CHAPTERS      Comma separated list of chapters to download
+  -l LANGUAGE, --language LANGUAGE      Language to download
+  -r, --ltr                             Set the read direction to left to right
+  -p, --points                          Skip any ".x" chapters
+```
 
 
 ## Warning

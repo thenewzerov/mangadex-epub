@@ -15,7 +15,9 @@ class MangaEpubCreator:
 
         create_directory(self.output_path)
 
-    def create_volume(self, volume_name, volume_directory, manga_directory, skip_download=False):
+    def create_volume(self, volume_name, volume_directory, manga_directory, language='en',
+                      left_to_right=False, skip_halfs=False):
+
         print('Creating epub for volume: ' + volume_name)
 
         # Get the Title
@@ -41,7 +43,11 @@ class MangaEpubCreator:
 
         # Set the title
         book.set_title(title + ' Vol ' + volume_name)
-        book.set_language("en")
+        book.set_language(language)
+
+        # Set the direction
+        if not left_to_right:
+            book.set_direction("rtl")
 
         # Add the cover.  If it doesn't exist, use the manga cover
         if os.path.isfile(os.path.join(volume_directory, 'cover.jpg')):
@@ -69,8 +75,14 @@ class MangaEpubCreator:
         # For every chapter in the volume directory, add it to the epub
         for chapter_dir in chapters_to_sort:
             chapter_directory = os.path.join(volume_directory, chapter_dir[1])
+
+            # Skip half chapters
+            if skip_halfs and '.' in chapter_dir[1]:
+                continue
+
             if os.path.isdir(chapter_directory):
-                chapter, chapter_name, pages_added = self.add_chapter(book, chapter_directory, chapter_count, page_count)
+                chapter, chapter_name, pages_added = self.add_chapter(book, chapter_directory, chapter_count,
+                                                                      page_count, language)
                 chapters.append(chapter)
                 page_count += pages_added
                 chapter_count += 1
@@ -88,7 +100,8 @@ class MangaEpubCreator:
         book.add_item(epub.EpubNav())
 
         # define CSS style
-        style = "BODY {color: white;}"
+        style = ('BODY {color: white;} img {display: block; margin: 0 auto;  max-width: 90%; height: auto;} '
+                 '.chapter { text-align: left }  .page-number { text-align: right }')
         nav_css = epub.EpubItem(
             uid="style_nav",
             file_name="style/nav.css",
@@ -106,14 +119,14 @@ class MangaEpubCreator:
         # write to the file
         epub.write_epub(book_path + '', book, {})
 
-    def add_chapter(self, book, chapter_directory, current_chapter_num, current_page_num):
+    def add_chapter(self, book, chapter_directory, current_chapter_num, current_page_num, language='en'):
         # Get the chapter name
         chapter_name = os.path.basename(chapter_directory).replace('Chapter_', '')
 
         page_count = 0
 
         # chapter with image
-        chapter = epub.EpubHtml(title='Chapter ' + chapter_name, file_name='Chapter_' + chapter_name + '.xhtml', lang='en')
+        chapter = epub.EpubHtml(title='Chapter ' + chapter_name, file_name='Chapter_' + chapter_name + '.xhtml', lang=language)
         chapter.content = u'''<html><head></head><body>'''
 
         # Add every page in the chapter to the epub
@@ -132,7 +145,10 @@ class MangaEpubCreator:
                     content=image_content,
                 )
 
+                # Add the image to the page
                 chapter.content += u'''<img src="''' + image_id + u'''"/>'''
+
+                # Add a page break
                 chapter.content += create_pagebreak(current_page_num + page_count)
 
                 # add image to epub
