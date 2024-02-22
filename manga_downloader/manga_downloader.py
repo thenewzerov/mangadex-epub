@@ -84,7 +84,7 @@ class MangaDownloader:
                     continue
 
                 # Skip .5 chapters
-                if skip_halfs and chapter_dict['chapter'].contains('.'):
+                if skip_halfs and '.' in chapter_dict['chapter']:
                     continue
 
                 print('    Chapter: ' + chapter_dict['chapter'])
