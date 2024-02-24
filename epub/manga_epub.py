@@ -21,7 +21,7 @@ class MangaEpubCreator:
         print('Creating epub for volume: ' + volume_name)
 
         # Get the Title
-        title = self.manga.title['en']
+        title = next(iter(self.manga.title.values()))
 
         for alt_title_dict in self.manga.altTitles:
             if 'en' in alt_title_dict:

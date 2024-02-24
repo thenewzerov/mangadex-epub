@@ -42,7 +42,7 @@ if __name__ == '__main__':
     # Create the Epub Generator
     manga = details['manga']
 
-    title = manga.title['en']
+    title = next(iter(manga.title.values()))
 
     for alt_title_dict in manga.altTitles:
         if 'en' in alt_title_dict:

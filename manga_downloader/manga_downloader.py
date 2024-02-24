@@ -22,7 +22,9 @@ class MangaDownloader:
             return '', errors
 
         # Create directory for manga
-        title = manga.title['en']
+
+        # Get the title (whatever the first available one is)
+        title = next(iter(manga.title.values()))
 
         for alt_title_dict in manga.altTitles:
             if language in alt_title_dict:
@@ -118,7 +120,8 @@ class MangaDownloader:
                     download_needed = False
                     for index, page in enumerate(pages):
                         # Print progress
-                        print_progress_bar(index + 1, len(pages), prefix='      Progress:', suffix='Complete', length=50)
+                        print_progress_bar(index + 1, len(pages), prefix='      Progress:', suffix='Complete',
+                                           length=50)
 
                         # Download page if it doesn't exist
                         page_filename = os.path.join(chapter_directory, f'{index:03d}.jpg')
@@ -131,7 +134,8 @@ class MangaDownloader:
 
                             success = download_file(page_filename, page)
                             if not success:
-                                print('Volume: ' + volume_number + ' Chapter: ' + chapter_number + ' Page: ' + str(index))
+                                print(
+                                    'Volume: ' + volume_number + ' Chapter: ' + chapter_number + ' Page: ' + str(index))
                                 errors.append('Page ' + str(page))
 
                     if download_needed:
